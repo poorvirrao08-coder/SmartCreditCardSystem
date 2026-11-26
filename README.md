@@ -16,7 +16,7 @@ The project deliberately keeps the original `app.py` and its inserted catalogue 
 - Payment tracking with due dates, statement settlement and credit restoration.
 - Dashboard with credit utilization, category breakdown, spending trend and upcoming payments.
 - Recommendation engine that compares cashback, reward points, caps, exclusions, annual fee and available credit.
-- Existing recommendation/advisor pages from the original project remain available.
+- Card Selector and Spending Advisor pages use the same dashboard UI as the rest of the app.
 - REST JSON APIs for every module.
 - Responsive dashboard UI built with plain CSS and vanilla JavaScript.
 
@@ -66,7 +66,7 @@ SmartCreditCardSystem/
 │   ├── login.html
 │   ├── register.html
 │   ├── profile.html
-│   └── index.html, cards.html, compare.html, recommend.html, advisor.html  # Legacy UI
+│   └── index.html, cards.html, compare.html, recommend.html, advisor.html  # Dashboard UI
 ├── static/
 │   ├── css/dashboard.css
 │   ├── js/app.js
@@ -113,6 +113,8 @@ MYSQL_USER=smartcard_app
 MYSQL_PASSWORD=your_password
 MYSQL_DATABASE=smart_credit_card
 FLASK_SECRET_KEY=replace-with-a-long-random-string
+FLASK_HOST=127.0.0.1
+FLASK_PORT=5001
 ```
 
 ### 3. Run migrations
@@ -203,6 +205,6 @@ See `docs/DATABASE.md` and `sql/demo_queries.sql`.
 ## Notes about existing data
 
 - Original `issuers`, `credit_cards`, `card_benefits`, `reward_conditions` and `data_sources` rows are preserved.
-- New columns `card_benefits.point_value` and `credit_cards.bank_id` are added only if absent.
+- Missing columns such as `card_benefits.point_value`, `credit_cards.bank_id`, `issuers.issuer_code` and `benefit_categories.description` are added only if absent.
 - New tables (`users`, `banks`, `user_cards`, `statements`, `transactions`, `payments`, category tables) are created only if absent.
 - Demo data is idempotent: rerunning the migration does not duplicate it.
