@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Payments{% endblock %}
+{% block page_title %}Payments & Due Dates{% endblock %}
+{% block page_subtitle %}Track payments, reminders and statements{% endblock %}
+
+{% block content %}
+{% if not current_user %}
+<div class="card empty-state"><p>Please <a href="/login" style="color:var(--blue);font-weight:700;">login</a> to track payments.</p></div>
+{% else %}
+<div id="page-alert"></div>
+<div class="section-head">
+    <div><h2 style="color:var(--navy);font-size:17px;">Upcoming Dues</h2><p>Statements due in the next 30 days.</p></div>
+    <button class="btn primary" onclick="openAddPayment()">+ Record payment</button>
+</div>
+<div class="grid grid-3" id="upcoming-cards" style="margin-bottom:22px;"></div>
+
+<div class="card" style="overflow-x:auto;">
+    <div class="section-head"><div><h2>Payment History</h2><p>Completed and pending payments.</p></div></div>
+    <table>
+        <thead><tr><th>Date</th><th>Card</th><th>Method</th><th>Reference</th><th>Status</th><th style="text-align:right;">Amount</th><th></th></tr></thead>
+        <tbody id="payment-list"></tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if current_user %}<script>loadPayments();</script>{% endif %}
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}My Cards{% endblock %}
+{% block page_title %}My Credit Cards{% endblock %}
+{% block page_subtitle %}Add, update and monitor your cards{% endblock %}
+
+{% block content %}
+{% if not current_user %}
+<div class="card empty-state"><p>Please <a href="/login" style="color:var(--blue);font-weight:700;">login</a> to manage your cards.</p></div>
+{% else %}
+<div id="page-alert"></div>
+<div class="section-head">
+    <div><h2 style="color:var(--navy);font-size:17px;">Your Wallet</h2><p>Card numbers are stored masked (last 4 digits only).</p></div>
+    <button class="btn primary" onclick="openAddCard()">+ Add card</button>
+</div>
+<div class="grid grid-3" id="my-cards"></div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if current_user %}<script>loadMyCards();</script>{% endif %}
+{% endblock %}

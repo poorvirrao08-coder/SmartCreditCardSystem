@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block page_title %}Welcome to SmartCard{% endblock %}
+{% block page_subtitle %}Manage cards, spending and rewards in one place{% endblock %}
+{% block content %}
+<div class="grid grid-3">
+    <div class="card gold-card">
+        <div class="stat-label">CARD INTELLIGENCE</div>
+        <div class="stat-value">Pick the right card</div>
+        <p class="stat-note">Compare cashback, caps, fees and eligibility using verified benefits.</p>
+        <a class="btn primary small" href="/recommend">Open Card Selector</a>
+    </div>
+    <div class="card green-card">
+        <div class="stat-label">SPENDING ADVISOR</div>
+        <div class="stat-value">Understand your spend</div>
+        <p class="stat-note">See where your money goes and get practical savings advice.</p>
+        <a class="btn primary small" href="/advisor">Open Advisor</a>
+    </div>
+    <div class="card">
+        <div class="stat-label">YOUR WORKSPACE</div>
+        <div class="stat-value">Stay in control</div>
+        <p class="stat-note">Track transactions, payments, limits and upcoming dues.</p>
+        <a class="btn primary small" href="/dashboard">Go to Dashboard</a>
+    </div>
+</div>
+
+<div class="card" style="margin-top:22px;">
+    <div class="section-head">
+        <h2>Quick links</h2>
+        <p>Everything uses the same dashboard layout and live MySQL data.</p>
+    </div>
+    <div class="grid grid-4">
+        <a class="btn ghost" href="/my-cards">My Cards</a>
+        <a class="btn ghost" href="/cards">Catalogue</a>
+        <a class="btn ghost" href="/compare">Compare Cards</a>
+        <a class="btn ghost" href="/transactions">Transactions</a>
+    </div>
+</div>
+{% endblock %}

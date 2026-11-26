@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Transactions{% endblock %}
+{% block page_title %}Transactions{% endblock %}
+{% block page_subtitle %}Record spending and analyse your expenses{% endblock %}
+
+{% block content %}
+{% if not current_user %}
+<div class="card empty-state"><p>Please <a href="/login" style="color:var(--blue);font-weight:700;">login</a> to view transactions.</p></div>
+{% else %}
+<div id="page-alert"></div>
+<div class="section-head">
+    <div><h2 style="color:var(--navy);font-size:17px;">Transaction History</h2><p>Every transaction atomically updates available credit.</p></div>
+    <button class="btn primary" onclick="openAddTransaction()">+ Add transaction</button>
+</div>
+
+<div class="card" style="margin-bottom:20px;">
+    <div class="grid grid-3">
+        <div class="field"><label>Month</label><input type="month" id="filter-month"></div>
+        <div class="field"><label>Category</label><select id="filter-category"><option value="">All categories</option></select></div>
+        <div class="field"><label>Card</label><select id="filter-card"><option value="">All cards</option></select></div>
+    </div>
+    <button class="btn ghost small" onclick="loadTransactions()">Apply filters</button>
+</div>
+
+<div class="grid grid-2" style="margin-bottom:20px;">
+    <div class="card"><div class="section-head"><h2>Category Breakdown</h2></div><div id="txn-summary"></div></div>
+    <div class="card"><div class="section-head"><h2>Quick Totals</h2></div><div id="txn-totals"></div></div>
+</div>
+
+<div class="card" style="overflow-x:auto;">
+    <table>
+        <thead><tr><th>Date</th><th>Merchant</th><th>Category</th><th>Card</th><th>Status</th><th style="text-align:right;">Amount</th><th></th></tr></thead>
+        <tbody id="transaction-list"></tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if current_user %}<script>loadTransactions();</script>{% endif %}
+{% endblock %}

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SmartCard{% endblock %} | Smart Credit Card Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+<div class="shell">
+
+    <aside class="sidebar">
+        <a href="/" class="brand">
+            <span class="brand-mark">▣</span>
+            SmartCard
+        </a>
+
+        <div class="nav-group">
+            <div class="nav-label">WORKSPACE</div>
+            <a class="nav-link {{ 'active' if request.path == '/dashboard' else '' }}" href="/dashboard"><span class="nav-icon">◫</span> Dashboard</a>
+            <a class="nav-link {{ 'active' if request.path == '/my-cards' else '' }}" href="/my-cards"><span class="nav-icon">▤</span> My Cards</a>
+            <a class="nav-link {{ 'active' if request.path == '/transactions' else '' }}" href="/transactions"><span class="nav-icon">⇄</span> Transactions</a>
+            <a class="nav-link {{ 'active' if request.path == '/payments' else '' }}" href="/payments"><span class="nav-icon">◷</span> Payments</a>
+            <a class="nav-link {{ 'active' if request.path == '/profile' else '' }}" href="/profile"><span class="nav-icon">◎</span> Profile</a>
+        </div>
+
+        <div class="nav-group">
+            <div class="nav-label">CARD INTELLIGENCE</div>
+            <a class="nav-link" href="/recommend"><span class="nav-icon">✦</span> Card Selector</a>
+            <a class="nav-link" href="/advisor"><span class="nav-icon">◈</span> Spending Advisor</a>
+            <a class="nav-link" href="/cards"><span class="nav-icon">▦</span> Catalogue</a>
+            <a class="nav-link" href="/compare"><span class="nav-icon">⚖</span> Compare</a>
+        </div>
+
+        <div class="sidebar-footer">
+            Smart Credit Card Management System<br>
+            MySQL · Flask · REST APIs
+        </div>
+    </aside>
+
+    <div class="main-area">
+        <header class="topbar">
+            <div>
+                <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+                <p>{% block page_subtitle %}Your complete credit card overview{% endblock %}</p>
+            </div>
+            <div class="topbar-actions">
+                {% if current_user %}
+                    <div class="user-pill">
+                        <span class="avatar">{{ current_user.full_name[0]|upper }}</span>
+                        <span>{{ current_user.full_name }}</span>
+                    </div>
+                    <a class="btn ghost small" href="/logout">Logout</a>
+                {% else %}
+                    <a class="btn primary small" href="/login">Login</a>
+                    <a class="btn ghost small" href="/register">Register</a>
+                {% endif %}
+            </div>
+        </header>
+
+        <main class="content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+
+<div class="modal-backdrop" id="modal-backdrop">
+    <div class="modal">
+        <h2 id="modal-title">Form</h2>
+        <div id="modal-body"></div>
+        <div class="modal-actions">
+            <button class="btn ghost" type="button" onclick="closeModal()">Cancel</button>
+            <button class="btn primary" type="button" id="modal-submit">Save</button>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

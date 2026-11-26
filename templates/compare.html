@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Compare Cards{% endblock %}
+{% block page_title %}Compare Cards{% endblock %}
+{% block page_subtitle %}Compare catalogue cards side by side{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="section-head">
+        <h2>Select 2 or 3 cards</h2>
+        <p>Compare is enabled once at least 2 cards are selected.</p>
+    </div>
+    <div id="compare-picker" class="grid grid-3"></div>
+    <p id="compare-hint" style="color:var(--muted);font-size:13px;margin-top:16px;">Select at least 2 cards to compare.</p>
+    <button class="btn primary" id="compare-run" style="margin-top:8px;" disabled>Compare selected</button>
+</div>
+<div class="card" id="compare-result" style="margin-top:22px;">
+    <div class="empty-state">Select cards above to see a comparison.</div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+let catalogueRows = [];
+let selected = new Set();
+
+async function loadComparePicker() {
+    const result = await api("/api/cards/catalogue?status=Active");
+    if (!result.success) { notify(result.error, "error"); return; }
+    catalogueRows = result.data.slice(0, 60);
+    document.getElementById("compare-picker").innerHTML = catalogueRows.map(card => `
+        <label class="card" style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;">
+            <input type="checkbox" value="${card.card_id}" onchange="toggleCompare(${card.card_id}, this, this.checked)">
+            <span><strong>${escapeHtml(card.card_name)}</strong><br><small style="color:var(--muted);">${escapeHtml(card.bank_name)} · ${escapeHtml(card.card_type || 'Card')}</small></span>
+        </label>`).join("");
+    updateCompareState();
+}
+
+function updateCompareState() {
+    const count = selected.size;
+    document.getElementById("compare-run").disabled = count < 2;
+    const hint = document.getElementById("compare-hint");
+    if (count === 0) hint.textContent = "Select at least 2 cards to compare.";
+    else if (count === 1) hint.textContent = "Minimum of 2 cards must be selected to compare. Select 1 more.";
+    else hint.textContent = `Ready to compare ${count} cards.`;
+}
+
+function toggleCompare(id, element, checked) {
+    if (checked) {
+        if (selected.size >= 3) {
+            notify("You can compare up to 3 cards.", "error");
+            element.checked = false;
+            return;
+        }
+        selected.add(id);
+    } else {
+        selected.delete(id);
+    }
+    updateCompareState();
+}
+
+function runCompare() {
+    if (selected.size < 2) {
+        notify("Minimum of 2 cards must be selected to compare.", "error");
+        return;
+    }
+    const cards = catalogueRows.filter(row => selected.has(row.card_id));
+    const box = document.getElementById("compare-result");
+    const rows = [
+        ["Bank", c => c.bank_name],
+        ["Type", c => c.card_type || "-"],
+        ["Annual fee", c => money(c.annual_fee)],
+        ["Joining fee", c => money(c.joining_fee)],
+        ["Reward rate", c => `${Number(c.reward_rate || 0)}%`],
+        ["Best cashback", c => `${Number(c.best_cashback || 0)}%`],
+        ["Verified benefits", c => c.benefit_count || 0],
+        ["Min. income", c => money(c.minimum_income)],
+    ];
+    box.innerHTML = `
+        <div class="section-head"><h2>Comparison</h2><p>Live data from the catalogue API.</p></div>
+        <table><thead><tr><th>Feature</th>${cards.map(c => `<th>${escapeHtml(c.card_name)}</th>`).join("")}</tr></thead>
+        <tbody>${rows.map(([label, get]) => `<tr><td><strong>${label}</strong></td>${cards.map(c => `<td>${escapeHtml(get(c))}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+}
+
+document.addEventListener("DOMContentLoaded", loadComparePicker);
+document.getElementById("compare-run").addEventListener("click", runCompare);
+</script>
+{% endblock %}

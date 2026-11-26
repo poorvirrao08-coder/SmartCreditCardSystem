@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Spending Advisor{% endblock %}
+{% block page_title %}Spending Advisor{% endblock %}
+{% block page_subtitle %}Get practical advice from your monthly spending pattern{% endblock %}
+{% block content %}
+<div class="grid grid-12-8">
+    <div class="card">
+        <div class="section-head"><h2>Your monthly numbers</h2><p>Enter approximate values to get tailored guidance.</p></div>
+        <form id="advisor-form">
+            <div class="form-grid">
+                <div class="field"><label>Monthly income (₹)</label><input name="monthly_income" type="number" min="1" step="1" value="85000" required></div>
+                <div class="field"><label>Shopping (₹)</label><input name="shopping" type="number" min="0" step="1" value="15000"></div>
+                <div class="field"><label>Dining (₹)</label><input name="dining" type="number" min="0" step="1" value="6000"></div>
+                <div class="field"><label>Travel (₹)</label><input name="travel" type="number" min="0" step="1" value="8000"></div>
+                <div class="field"><label>Fuel (₹)</label><input name="fuel" type="number" min="0" step="1" value="4000"></div>
+                <div class="field"><label>Groceries (₹)</label><input name="groceries" type="number" min="0" step="1" value="9000"></div>
+                <div class="field"><label>Entertainment (₹)</label><input name="entertainment" type="number" min="0" step="1" value="3000"></div>
+                <div class="field"><label>Frequent merchant (optional)</label><input name="merchant" type="text" placeholder="e.g. Amazon India"></div>
+            </div>
+            <button class="btn primary" type="submit">Get advice</button>
+        </form>
+    </div>
+    <div class="card green-card" id="advisor-summary">
+        <div class="stat-label">SUMMARY</div>
+        <div class="stat-value">Waiting for inputs</div>
+        <p class="stat-note">Submit the form to see your spending profile.</p>
+    </div>
+</div>
+
+<div class="card" id="advisor-output" style="margin-top:22px;">
+    <div class="empty-state">Advice and a suggested card will appear here.</div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById("advisor-form").addEventListener("submit", async function (event) {
+    event.preventDefault();
+    const payload = Object.fromEntries(new FormData(event.target).entries());
+    const result = await api("/api/advisor", { method: "POST", body: payload });
+    if (!result.success) { notify(result.error, "error"); return; }
+    const data = result.data;
+    document.getElementById("advisor-summary").innerHTML = `
+        <div class="stat-label">SUMMARY</div>
+        <div class="stat-value">${money(data.total_spending)} / ${money(data.monthly_income)}</div>
+        <p class="stat-note">Highest category: ${escapeHtml(data.highest_category || "None")} · ${money(data.category_spending[data.highest_category] || 0)}</p>`;
+    const rec = data.recommended_card;
+    document.getElementById("advisor-output").innerHTML = `
+        <div class="section-head"><h2>Advice</h2><p>Based on your entered spending.</p></div>
+        <ul>${data.advice.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+        <div class="section-head" style="margin-top:24px;"><h2>Suggested card</h2></div>
+        ${rec ? `<div class="card gold-card"><h3>${escapeHtml(rec.card_name)}</h3><p>${escapeHtml(rec.bank_name)}</p><p class="reason">${escapeHtml(rec.reason)}</p><p><strong>Net value:</strong> ${money(rec.net_monthly_value)}/month</p></div>`
+             : '<div class="empty-state">No card matched this spending profile.</div>'}`;
+});
+</script>
+{% endblock %}

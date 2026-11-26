@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Card Selector{% endblock %}
+{% block page_title %}Card Selector{% endblock %}
+{% block page_subtitle %}Find the best card for your next purchase{% endblock %}
+{% block content %}
+<div class="grid grid-12-8">
+    <div class="card">
+        <div class="section-head"><h2>Tell us about the purchase</h2><p>We check benefits, caps, exclusions and fees.</p></div>
+        <form id="selector-form">
+            <div class="form-grid">
+                <div class="field"><label>Expected amount (₹)</label><input name="amount" type="number" min="1" step="1" value="10000" required></div>
+                <div class="field"><label>Category</label><select name="category" id="selector-category"><option value="Shopping">Shopping</option></select></div>
+                <div class="field full"><label>Merchant (optional)</label><input name="merchant" type="text" placeholder="e.g. Amazon India"></div>
+            </div>
+            <button class="btn primary" type="submit">Recommend a card</button>
+        </form>
+    </div>
+    <div class="card gold-card" id="selector-winner">
+        <div class="stat-label">BEST MATCH</div>
+        <div class="stat-value">No result yet</div>
+        <p class="stat-note">Submit the form to see the top card.</p>
+    </div>
+</div>
+
+<div class="card" style="margin-top:22px;" id="selector-result">
+    <div class="empty-state">Eligible and ineligible cards will appear here.</div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+async function loadSelectorCategories() {
+    const result = await api("/api/recommendation-categories");
+    if (!result.success) return;
+    document.getElementById("selector-category").innerHTML = result.data.map(row =>
+        `<option value="${escapeHtml(row.category_name)}">${escapeHtml(row.category_name)}</option>`).join("");
+}
+
+function renderCard(card, eligible) {
+    return `<div class="card ${eligible ? 'green-card' : ''}">
+        <div class="section-head"><h3>${escapeHtml(card.card_name)}</h3><p>${escapeHtml(card.bank_name)}</p></div>
+        <p><strong>Expected value:</strong> ${money(card.net_monthly_value ?? card.expected_value)}</p>
+        <p><strong>Cashback:</strong> ${money(card.expected_cashback)} · <strong>Points:</strong> ${card.expected_points || 0}</p>
+        <p class="reason">${escapeHtml(card.reason || '')}</p>
+    </div>`;
+}
+
+document.addEventListener("DOMContentLoaded", loadSelectorCategories);
+document.getElementById("selector-form").addEventListener("submit", async function (event) {
+    event.preventDefault();
+    const payload = Object.fromEntries(new FormData(event.target).entries());
+    const result = await api("/api/recommendations", { method: "POST", body: payload });
+    if (!result.success) { notify(result.error, "error"); return; }
+    const data = result.data;
+    const winner = document.getElementById("selector-winner");
+    if (data.recommended) {
+        winner.innerHTML = `<div class="stat-label">BEST MATCH</div>
+            <div class="stat-value">${escapeHtml(data.recommended.card_name)}</div>
+            <p class="stat-note">${escapeHtml(data.recommended.bank_name)} · Net value ${money(data.recommended.net_monthly_value)}/month</p>
+            <p class="reason">${escapeHtml(data.recommended.reason)}</p>`;
+    } else {
+        winner.innerHTML = '<div class="stat-label">BEST MATCH</div><div class="stat-value">No eligible card</div><p class="stat-note">Try another amount or category.</p>';
+    }
+    document.getElementById("selector-result").innerHTML = `
+        <div class="section-head"><h2>Eligible cards</h2><p>Compared using verified benefits only.</p></div>
+        <div class="grid grid-3">${data.eligible_cards.length ? data.eligible_cards.map(c => renderCard(c, true)).join("") : '<div class="empty-state">No eligible cards.</div>'}</div>
+        <div class="section-head" style="margin-top:26px;"><h2>Ineligible cards</h2><p>Reasons include caps, exclusions, income or available credit.</p></div>
+        <div class="grid grid-3">${data.ineligible_cards.length ? data.ineligible_cards.map(c => renderCard(c, false)).join("") : '<div class="empty-state">None.</div>'}</div>`;
+});
+</script>
+{% endblock %}

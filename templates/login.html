@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block page_title %}Login{% endblock %}
+{% block page_subtitle %}Access your credit card workspace{% endblock %}
+
+{% block content %}
+<div class="auth-wrap" style="margin:-28px -30px -45px;">
+    <div class="auth-card">
+        <h1>Welcome back</h1>
+        <p>Login to manage cards, spending and rewards.</p>
+        <div class="alert error hidden" id="auth-error"></div>
+        <form id="login-form">
+            <div class="field"><label>Email</label><input type="email" name="email" value="demo@smartcard.local" required></div>
+            <div class="field"><label>Password</label><input type="password" name="password" value="Demo@12345" required></div>
+            <button class="btn primary" type="submit">Login</button>
+        </form>
+        <div class="auth-link">New here? <a href="/register">Create an account</a></div>
+        <div class="auth-link" style="margin-top:6px;">Demo credentials are pre-filled.</div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}<script>bindAuthForm('login-form', '/api/auth/login');</script>{% endblock %}

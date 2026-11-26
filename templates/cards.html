@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Card Catalogue{% endblock %}
+{% block page_title %}Card Catalogue{% endblock %}
+{% block page_subtitle %}Browse verified cards from your MySQL catalogue{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="grid grid-3">
+        <div class="field">
+            <label>Search cards or banks</label>
+            <input id="catalogue-search" type="text" placeholder="e.g. HDFC, Travel">
+        </div>
+        <div class="field">
+            <label>Status</label>
+            <select id="catalogue-status">
+                <option value="">All statuses</option>
+                <option value="Active">Active</option>
+                <option value="Unverified">Unverified</option>
+            </select>
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:10px;">
+            <button class="btn primary" id="catalogue-load">Refresh</button>
+            <a class="btn ghost" href="/compare">Compare selected</a>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-3" id="catalogue-grid" style="margin-top:22px;"></div>
+{% endblock %}
+{% block scripts %}
+<script>
+async function loadCatalogue() {
+    const search = document.getElementById("catalogue-search").value.trim();
+    const status = document.getElementById("catalogue-status").value;
+    const result = await api(`/api/cards/catalogue?search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}`);
+    const grid = document.getElementById("catalogue-grid");
+    if (!result.success) { grid.innerHTML = `<div class="alert error">${escapeHtml(result.error)}</div>`; return; }
+    if (!result.data.length) { grid.innerHTML = '<div class="empty-state">No cards found.</div>'; return; }
+    grid.innerHTML = result.data.map(card => `
+        <div class="card bank-card">
+            <div class="bank-card-top">
+                <span class="badge">${escapeHtml(card.card_type || 'Card')}</span>
+                <span class="badge ${String(card.card_status).toLowerCase() === 'active' ? 'success' : ''}">${escapeHtml(card.card_status)}</span>
+            </div>
+            <h3>${escapeHtml(card.card_name)}</h3>
+            <p style="color:var(--muted);font-size:13px;">${escapeHtml(card.bank_name)}</p>
+            <div class="bank-card-number">₹${Number(card.annual_fee || 0).toLocaleString('en-IN')}/yr</div>
+            <div class="bank-card-bottom">
+                <span>Best cashback: <strong>${Number(card.best_cashback || 0)}%</strong></span>
+                <span>${card.benefit_count || 0} verified benefits</span>
+            </div>
+            <p style="font-size:12px;color:var(--muted);margin-top:12px;min-height:34px;">${escapeHtml(card.description || 'No description available.')}</p>
+            <a class="btn ghost small" href="/recommend">Check eligibility</a>
+        </div>`).join("");
+}
+
+document.addEventListener("DOMContentLoaded", loadCatalogue);
+document.getElementById("catalogue-load").addEventListener("click", loadCatalogue);
+document.getElementById("catalogue-search").addEventListener("keydown", event => { if (event.key === "Enter") loadCatalogue(); });
+document.getElementById("catalogue-status").addEventListener("change", loadCatalogue);
+</script>
+{% endblock %}
